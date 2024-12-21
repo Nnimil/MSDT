@@ -1,37 +1,44 @@
 import json
 import hashlib
 from typing import List
+import csv
+from validator import Validator  # Убедитесь, что Validator определен
 
-"""
-В этом модуле обитают функции, необходимые для автоматизированной проверки результатов ваших трудов.
-"""
+CSV_PATH = "./21.csv"  # Укажите путь к вашему CSV-файлу
+JSON_PATH = "result.json"
+OPTION = 21  # Укажите ваш вариант
 
+def get_numbers_id_with_wrong_data(csv_file_path: str) -> list[int]:
+    """Получить номера строк с ошибками из CSV-файла."""
+    numbers_id_with_wrong_data = []
+    validator = Validator()  # Создаем экземпляр валидатора
+    with open(csv_file_path, newline='', encoding="utf-16") as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=';')
+        for row_id, row in enumerate(reader):
+            for pattern, data in row.items():
+                if not validator.validate_data(pattern, data):
+                    numbers_id_with_wrong_data.append(row_id - 1)  # Корректируем индекс
+    return numbers_id_with_wrong_data
 
 def calculate_checksum(row_numbers: List[int]) -> str:
-    """
-    Вычисляет md5 хеш от списка целочисленных значений.
-
-    ВНИМАНИЕ, ВАЖНО! Чтобы сумма получилась корректной, считать, что первая строка с данными csv-файла имеет номер 0
-    Другими словами: В исходном csv 1я строка - заголовки столбцов, 2я и остальные - данные.
-    Соответственно, считаем что у 2 строки файла номер 0, у 3й - номер 1 и так далее.
-
-    :param row_numbers: список целочисленных номеров строк csv-файла, на которых были найдены ошибки валидации
-    :return: md5 хеш для проверки через github action
-    """
+    """Вычислить контрольную сумму."""
     row_numbers.sort()
     return hashlib.md5(json.dumps(row_numbers).encode('utf-8')).hexdigest()
 
-
 def serialize_result(variant: int, checksum: str) -> None:
-    """
-    Метод для сериализации результатов лабораторной пишите сами.
-    Вам нужно заполнить данными - номером варианта и контрольной суммой - файл, лежащий в папке с лабораторной.
-    Файл называется, очевидно, result.json.
+    """Записать результат в JSON."""
+    result = {
+        "variant": variant,
+        "checksum": checksum
+    }
+    with open(JSON_PATH, "w", encoding="utf-8") as json_file:
+        json.dump(result, json_file)
 
-    ВНИМАНИЕ, ВАЖНО! На json натравлен github action, который проверяет корректность выполнения лабораторной.
-    Так что не перемещайте, не переименовывайте и не изменяйте его структуру, если планируете успешно сдать лабу.
+def main():
+    """Основная функция."""
+    numbers_id_with_wrong_data = get_numbers_id_with_wrong_data(CSV_PATH)
+    check_sum = calculate_checksum(numbers_id_with_wrong_data)
+    serialize_result(OPTION, check_sum)
 
-    :param variant: номер вашего варианта
-    :param checksum: контрольная сумма, вычисленная через calculate_checksum()
-    """
-    pass
+if __name__ == "__main__":
+    main()
