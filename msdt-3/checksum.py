@@ -4,9 +4,9 @@ from typing import List
 import csv
 from validator import Validator  # Убедитесь, что Validator определен
 
-CSV_PATH = "./21.csv"  # Укажите путь к вашему CSV-файлу
+CSV_PATH = "./85.csv"  # Укажите путь к вашему CSV-файлу
 JSON_PATH = "result.json"
-OPTION = 21  # Укажите ваш вариант
+OPTION = 85  # Укажите ваш вариант
 
 def get_numbers_id_with_wrong_data(csv_file_path: str) -> list[int]:
     """Получить номера строк с ошибками из CSV-файла."""
@@ -42,3 +42,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
